@@ -52,17 +52,19 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.IntegerStringConverter;
+import util.S;
 
 public class Start extends BorderPane {
 	public List<String> mCities;
 	public List<Integer> mDirection;
 	public double mMatrix[][] = new double[50][50];
 	private double mCost;
-	
+	private int alg=1;
+	private Stage stage;
 	public Start(Stage stage) {
 		super();
 		// TODO Auto-generated constructor stub
-		
+		this.stage=stage;
 		Button openProject = new Button("Open TSP");
 		Button newCity = new Button("Add city "); 
 		HBox toplayout= new HBox(openProject, newCity);
@@ -75,11 +77,40 @@ public class Start extends BorderPane {
 		TextArea  startResult = new TextArea();
 		TextArea  startProgress = new TextArea();
 		
-		
+		// Create the radio buttons.
+				RadioButton rbGen = new RadioButton("Gentic algorithm");
+				RadioButton rbDyn = new RadioButton("Dynamic algorithm");
+				RadioButton rbKnn = new RadioButton("KNN algorithm");
+				// Create a toggle group.
+				ToggleGroup tg = new ToggleGroup();
+				// Add each button to a toggle group.
+				rbDyn.setToggleGroup(tg);
+				rbKnn.setToggleGroup(tg);
+				rbGen.setToggleGroup(tg);
+				rbGen.setSelected(true);
+				// Handle action events for the radio buttons.
+				rbDyn.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent ae) {
+				System.out.println("Dyn");
+				alg=1;
+				}
+				});
+				rbGen.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent ae) {
+					alg=2;
+					System.out.println("Gen");
+				}
+				});
+				rbKnn.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent ae) {
+					System.out.println("knn");
+					alg=3;
+				}
+				});
 		startInput.setEditable(false);;
-		 VBox rightLay= new VBox(start,save);
-		 VBox leftLay= new VBox();
-		 
+		 VBox rightLay= new VBox(start,save); 
+		 VBox algLayout= new VBox(rbGen,rbKnn,rbDyn); 
+		 algLayout.setAlignment(Pos.BASELINE_LEFT);
 		super.setTop(toplayout);
 		super.setRight(rightLay);
 		super.setBottom(clear);
@@ -88,35 +119,10 @@ public class Start extends BorderPane {
 		SplitPane sp=new SplitPane( startInput , sp1);
 		sp.setOrientation(Orientation.VERTICAL);
 		super.setCenter( sp );
-		super.setLeft(leftLay);
-		/*
-		// Create the radio buttons.
-		RadioButton rbGen = new RadioButton("Gentic algorith");
-		RadioButton rbDyn = new RadioButton("Car");
-		RadioButton rbKnn = new RadioButton("Airplane");
-		// Create a toggle group.
-		ToggleGroup tg = new ToggleGroup();
-		// Add each button to a toggle group.
-		rbTrain.setToggleGroup(tg);
-		rbCar.setToggleGroup(tg);
-		rbPlane.setToggleGroup(tg);
-		// Handle action events for the radio buttons.
-		rbTrain.setOnAction(new EventHandler<ActionEvent>() {
-		public void handle(ActionEvent ae) {
-		response.setText("Transport selected is train.");
-		}
-		});
-		rbCar.setOnAction(new EventHandler<ActionEvent>() {
-		public void handle(ActionEvent ae) {
-		response.setText("Transport selected is car.");
-		}
-		});
-		rbPlane.setOnAction(new EventHandler<ActionEvent>() {
-		public void handle(ActionEvent ae) {
-		response.setText("Transport selected is airplane.");  
-		}
-		});
-		*/
+		super.setLeft(algLayout);
+		
+		
+		 
 		openProject.setOnAction(new EventHandler<ActionEvent>() {
 			
 			@Override
@@ -141,12 +147,17 @@ public class Start extends BorderPane {
 			public void handle(ActionEvent event) { 
 				if(mCities!=null)
 				if(mCities.size()>2) {
+					  
 					startProgress.setText(startProgress.getText()+"started 3 Algorthm at"+ new Date()+"\n");
-				 long d=	startAgl(getData(), 1);
+				 long d=	startAgl(getData(), alg);
 					//Test.printTravelPrices(getData(), 3);
 				startResult.setText( new Date()+"\n"+geFulltResult(d));
 				startProgress.setText(startProgress.getText()+"ended 3 Algorthm at "+ new Date()+"\n");
-				
+					 
+				}else {
+					// less than a problem
+					//notice(Window owner,String title,String warning,String solution)
+					S.notice(stage, "Notice", "Number of cities are/is less than a problem", "Add more cities or load a new project");
 				}
 			}
 			
@@ -238,7 +249,7 @@ protected long startAgl(double[][] data,int alg) {
 			
 			int dataInt[][] = new int[mCities.size()][mCities.size()];
 			dataInt =getDataInt(data);
-			
+			if(mCities.size()>20) {
 			start=System.currentTimeMillis();
 			Salesmensch geneticAlgorithm = new  Salesmensch(mCities.size(), SelectionType.ROULETTE,dataInt , 0, 0);
 			         SalesmanGenome result = geneticAlgorithm.optimize();
@@ -249,7 +260,10 @@ protected long startAgl(double[][] data,int alg) {
 			         mDirection.add( result.getStartingCity());
 			        mCost = result.getFitness();
 			         duration=end-start;
-			         System.out.println(duration);   
+			         System.out.println(duration);  
+		}else {
+			S.notice(stage, "Notice", "Cities are too much for Dynamic algorithm", "Use another algorithm");
+		}
 			         
 			break;
 		}
@@ -398,7 +412,9 @@ finish.setOnAction(new EventHandler<ActionEvent>() {
 			res=res+"\t"+c  ;
 		}
 		res+="\n";
-		for(int i =0; i<mCities.size();i++) {
+		for(int i =0; i<mCities.size();i++) 
+		{
+			res=res+ mCities.get(i);
 			for(int j =0; j<mCities.size();j++) {
 				res=res+"\t" + mMatrix[i][j];
 			}
@@ -501,16 +517,19 @@ finish.setOnAction(new EventHandler<ActionEvent>() {
 							updateMatrix(mCities.size() - 1, data);
 							stage.close();
 							 
-						}else
+						}else {
 						System.out.println(" data not Okay"); 
+						S.notice(stage, "Data input error ", " A Field empty or not a number", "Make sure  you all fields are numbers");
+						}
 					} else { 
 						mCities.add(newCityName.getText());
 						updateMatrix(mCities.size() - 1, null);
 						stage.close();
 					}
 				}else {
-					 
-						System.out.println("emty city name");
+					S.notice(stage, "Data input error ", "City name is empty ", "Make sure  city name not empty ");
+				 
+						System.out.println("empty city name");
 					 
 				}
 				

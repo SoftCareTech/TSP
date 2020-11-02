@@ -54,7 +54,7 @@ public class S {
 			}
 		}
 	  
-	 static void  notice(Window owner,String title,String warning,String solution) {
+	 static public void  notice(Window owner,String title,String warning,String solution) {
 			
 			VBox vertical = new VBox();
 			vertical.setAlignment(Pos.CENTER);
