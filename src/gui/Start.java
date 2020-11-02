@@ -1,6 +1,9 @@
 package gui;
 
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,6 +64,10 @@ public class Start extends BorderPane {
 	private double mCost;
 	private int alg=1;
 	private Stage stage;
+
+	
+	private String algName;
+	private TextArea startInput;
 	public Start(Stage stage) {
 		super();
 		// TODO Auto-generated constructor stub
@@ -73,10 +80,11 @@ public class Start extends BorderPane {
 		Button save = new Button("save");
 		Button start = new Button("start");
 		Button stop = new Button("stop");
-		TextArea  startInput = new TextArea();
+	   startInput = new TextArea();
 		TextArea  startResult = new TextArea();
 		TextArea  startProgress = new TextArea();
-		
+		startResult.setWrapText(true);
+		startProgress.setWrapText(true);
 		// Create the radio buttons.
 				RadioButton rbGen = new RadioButton("Gentic algorithm");
 				RadioButton rbDyn = new RadioButton("Dynamic algorithm");
@@ -93,18 +101,21 @@ public class Start extends BorderPane {
 				public void handle(ActionEvent ae) {
 				System.out.println("Dyn");
 				alg=1;
+             algName="Dynamic Algorithm";
 				}
 				});
 				rbGen.setOnAction(new EventHandler<ActionEvent>() {
 				public void handle(ActionEvent ae) {
 					alg=2;
 					System.out.println("Gen");
+					algName="Genetic Algorithm";
 				}
 				});
 				rbKnn.setOnAction(new EventHandler<ActionEvent>() {
 				public void handle(ActionEvent ae) {
 					System.out.println("knn");
 					alg=3;
+					algName="KNN Algorithm";
 				}
 				});
 		startInput.setEditable(false);;
@@ -141,8 +152,37 @@ public class Start extends BorderPane {
 			
 		});
 		
-	start.setOnAction(new EventHandler<ActionEvent>() {
+		
+		
+		
+		
+		
+		
+		
+save.setOnAction(new EventHandler<ActionEvent>() {
 			
+			@Override
+			public void handle(ActionEvent event) {
+				FileChooser fc = new FileChooser();
+				
+				File file = fc.showSaveDialog(stage);
+				//.setId("start");
+			 
+					if (!file.exists()) 
+							saveTSP(file.getAbsolutePath()+".tsp_softcare"); else
+				
+			 S.notice(stage, "Notice", "I/O Error: File Already exist","Choose another file name");	
+			
+			}
+
+			
+			
+		});
+		
+		
+		
+	start.setOnAction(new EventHandler<ActionEvent>() {
+
 			@Override
 			public void handle(ActionEvent event) { 
 				if(mCities!=null)
@@ -152,7 +192,7 @@ public class Start extends BorderPane {
 				 long d=	startAgl(getData(), alg);
 					//Test.printTravelPrices(getData(), 3);
 				startResult.setText( new Date()+"\n"+geFulltResult(d));
-				startProgress.setText(startProgress.getText()+"ended 3 Algorthm at "+ new Date()+"\n");
+				startProgress.setText(startProgress.getText()+algName+ new Date()+"\n");
 					 
 				}else {
 					// less than a problem
@@ -196,7 +236,7 @@ protected String geFulltResult(long d) {
 		return "Action have no defined output yet...";
 	}
 	String res="Movement\n";
-	res+="\n  Path: ";
+	res+="\tPath: ";
 	int prevouse =mDirection.get(0);
 	if(mDirection!=null)
 	for( int x=1 ;x<mDirection.size();x++) {
@@ -208,7 +248,7 @@ protected String geFulltResult(long d) {
 	 res+=mCities.get(prevouse)+"\t"; 
 	res+="\n Total distances \t"+mCost;
 	res+="\n Total time \t"+d;
-	res+="\n\n\n  Path: ";
+	res+="\n\n  Path: ";
 	  prevouse =mDirection.get(0);
 	if(mDirection!=null)
 	for( int x=0 ;x<mDirection.size();x++) {
@@ -555,6 +595,22 @@ finish.setOnAction(new EventHandler<ActionEvent>() {
 		
 	}
 	
-	 
+	private void saveTSP(String absolutePath) {
+		File f= new File(absolutePath); 
+				try ( DataOutputStream dout =
+				new DataOutputStream(new FileOutputStream(f)) )
+				{ 
+				dout.writeChars(startInput.getText());
+				} catch(FileNotFoundException e) {
+					S.notice(stage, "Notice", "Cannot Open Output File", e.getLocalizedMessage());
+				System.out.println("Cannot Open Output File");
+				return;
+				} catch(IOException e) {
+				System.out.println("I/O Error: " + e);
+				S.notice(stage, "Notice", "I/O Error:",e.getLocalizedMessage());
+				}
+				// startInput 
+		
+	} 
 	
 }
