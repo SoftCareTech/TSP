@@ -192,7 +192,11 @@ public class Start extends BorderPane {
 
 
 protected String geFulltResult(long d) {
+	if(mDirection.size()<2) {
+		return "Action have no defined output yet...";
+	}
 	String res="Movement\n";
+	res+="\n  Path: ";
 	int prevouse =mDirection.get(0);
 	if(mDirection!=null)
 	for( int x=1 ;x<mDirection.size();x++) {
@@ -204,7 +208,15 @@ protected String geFulltResult(long d) {
 	 res+=mCities.get(prevouse)+"\t"; 
 	res+="\n Total distances \t"+mCost;
 	res+="\n Total time \t"+d;
-	res+=mDirection.toString();
+	res+="\n\n\n  Path: ";
+	  prevouse =mDirection.get(0);
+	if(mDirection!=null)
+	for( int x=0 ;x<mDirection.size();x++) {
+		int i =mDirection.get(x);
+		res+=mCities.get(i)+"\t" ;
+	}
+	res+="\n  Path: "+mDirection.toString();
+	
 	return res;
 	}
 
@@ -231,6 +243,8 @@ protected long startAgl(double[][] data,int alg) {
 	 long end;
 		switch(alg) {
 		case 1 :{ 
+
+			if(mCities.size()<=20) {
 		  TspDynamicProgrammingIterative dyn = new TspDynamicProgrammingIterative(0,     data);
 			   dyn.solve(); 
 			    System.out.println(dyn.getTour().toString());
@@ -241,6 +255,11 @@ protected long startAgl(double[][] data,int alg) {
 			         duration=end-start;
 			         System.out.println(duration); 
 			         System.out.println(); 
+			}else {
+				 System.out.println("error size is "+mCities.size()); 
+				S.notice(stage, "Notice", "Cities are too much for Dynamic algorithm", "Use another algorithm");
+			}
+				 
 			break;
 		}
 		
@@ -249,7 +268,6 @@ protected long startAgl(double[][] data,int alg) {
 			
 			int dataInt[][] = new int[mCities.size()][mCities.size()];
 			dataInt =getDataInt(data);
-			if(mCities.size()>20) {
 			start=System.currentTimeMillis();
 			Salesmensch geneticAlgorithm = new  Salesmensch(mCities.size(), SelectionType.ROULETTE,dataInt , 0, 0);
 			         SalesmanGenome result = geneticAlgorithm.optimize();
@@ -261,10 +279,7 @@ protected long startAgl(double[][] data,int alg) {
 			        mCost = result.getFitness();
 			         duration=end-start;
 			         System.out.println(duration);  
-		}else {
-			S.notice(stage, "Notice", "Cities are too much for Dynamic algorithm", "Use another algorithm");
-		}
-			         
+		        
 			break;
 		}
 		
