@@ -26,8 +26,12 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
 public class S {
-	
-	  static  void print (ObservableList<String> sub) {
+	 
+	public static final String PATH_CITY ="css/bootstrap2.css";
+	public static final String PATH_MAIN ="css/bootstrap2.css";
+	public static final String PATH_NOTICES ="css/bootstrap2.css";
+
+	static  void print (ObservableList<String> sub) {
 		  System.out.println();
 		  System.out.println("start");
 		for(String s :sub) {
@@ -94,7 +98,9 @@ text.setTextFill(Color.GREEN);;
 			}
 			 
 		 }); 
-			Scene st = new Scene(main, 300, 100);
+			Scene st = new Scene(main, 300, 100); 
+ 
+      st.getStylesheets().add(PATH_NOTICES); 
 			stage.setScene(st);
 			stage.centerOnScreen();
 		stage.setTitle(title);

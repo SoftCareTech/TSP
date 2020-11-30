@@ -17,10 +17,12 @@ import javafx.stage.Modality;
 import static javafx.stage.Modality.NONE;
 import static javafx.stage.Modality.WINDOW_MODAL;
 
+import java.io.File;
 import java.util.List;
 
 import static javafx.stage.Modality.APPLICATION_MODAL;
 import javafx.stage.Window;
+import util.S;
 public class Main extends Application {
 public static void main(String[] args) {
 Application.launch(args);
@@ -29,6 +31,10 @@ Application.launch(args);
 @Override
 public void start(Stage stage) {   
 Scene scene = new Scene(new Start(stage), 700, 600);
+
+File f= new File("");
+ 
+scene.getStylesheets().add(S.PATH_MAIN);  
 stage.setScene(scene);
 stage.setTitle("Transportation Sales Problem ");
 stage.show();  

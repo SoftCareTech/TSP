@@ -33,6 +33,13 @@ public class Test {
         }
     }
     public static void main(String[] args) {
+    	
+    	 String dat= "F,\r\n" + 
+    	 		"X,5.0,\r\n" + 
+    	 		"D,6.0,9.0,\r\n" + 
+    	 		"";
+       /// Start.readTSP(dat);
+        if(true)return;
         int numberOfCities = 5;  // dynamic algorithm  is accepting only size 21 and below because of the comple
         int[][] travelPrices = new int[numberOfCities][numberOfCities];
         System.out.println (numberOfCities);
@@ -102,8 +109,7 @@ System.out.println(" Gen problem");
           
         System.out.println(" kNN problem");
         
-        
-        
+       
         
         TSPNearestNeighbour tsp = new TSPNearestNeighbour();
         

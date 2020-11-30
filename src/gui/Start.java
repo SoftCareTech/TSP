@@ -1,13 +1,17 @@
 package gui;
 
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Handler;
 
 import javax.xml.stream.events.Namespace;
 
@@ -16,6 +20,7 @@ import algorithm.Salesmensch;
 import algorithm.SelectionType;
 import algorithm.TSPNearestNeighbour;
 import algorithm.TspDynamicProgrammingIterative;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -55,12 +60,13 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.IntegerStringConverter;
+import util.ProgressPopUp;
 import util.S;
 
 public class Start extends BorderPane {
 	public List<String> mCities;
 	public List<Integer> mDirection;
-	public double mMatrix[][] = new double[50][50];
+	public static double mMatrix[][] = new double[50][50];
 	private double mCost;
 	private int alg=1;
 	private Stage stage;
@@ -74,7 +80,7 @@ public class Start extends BorderPane {
 		this.stage=stage;
 		Button openProject = new Button("Open TSP");
 		Button newCity = new Button("Add city "); 
-		HBox toplayout= new HBox(openProject, newCity);
+		HBox topLayout= new HBox(openProject, newCity);
 
 		Button clear = new Button("clear input");
 		Button save = new Button("save");
@@ -122,7 +128,8 @@ public class Start extends BorderPane {
 		 VBox rightLay= new VBox(start,save); 
 		 VBox algLayout= new VBox(rbGen,rbKnn,rbDyn); 
 		 algLayout.setAlignment(Pos.BASELINE_LEFT);
-		super.setTop(toplayout);
+		
+		super.setTop(topLayout);
 		super.setRight(rightLay);
 		super.setBottom(clear);
 		
@@ -130,22 +137,66 @@ public class Start extends BorderPane {
 		SplitPane sp=new SplitPane( startInput , sp1);
 		sp.setOrientation(Orientation.VERTICAL);
 		super.setCenter( sp );
-		super.setLeft(algLayout);
-		
-		
+		super.setLeft(algLayout); 
 		 
 		openProject.setOnAction(new EventHandler<ActionEvent>() {
 			
 			@Override
 			public void handle(ActionEvent event) {
 				FileChooser fc = new FileChooser();
-				
+				 
+				 
 				File file = fc.showOpenDialog(stage);
+				 fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("*.tsp_softcare",
+						 "*.txt","*cvs"));
 				//.setId("start");
 				if (file != null)
 					if (file.exists())
-						if (file.isFile())
-							readTSP(file.getAbsolutePath());
+						if (file.isFile()) {
+						
+								if(mCities==null)mCities = new ArrayList();
+								  ps= new ProgressPopUp( backgroundThread);
+								ps.notice(stage,"Loading TSP");
+								Runnable task = () -> {
+									try {
+										 System.out.print("gggggggg"); 
+										String tsp=	readFile(file);
+										if(ps!=null)
+											ps.pro(0.5, "setting result ");
+										if(readTSP(tsp)) {  
+										 	Platform.runLater(() ->  startInput.setText(getPreview()));
+									}else {
+										System.out.print(mCities.size());
+										Platform.runLater(() ->	 S.notice(stage, "Error", "File type or struct not match", "use the interface to add cities or read file format"));
+										 clear();
+									}
+										ps.prepareStop();;
+
+                try {
+					Thread.sleep(2000);
+					
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+                
+                ps.stop();;
+									} catch (IOException e) {
+										e.printStackTrace();
+										Platform.runLater(() ->	S.notice(stage, "Error", "IOException", e.getMessage()));
+									 
+									}
+								};
+								// Run the task in a background thread
+								 backgroundThread = new Thread(task);
+								// Terminate the running thread if the application exits
+								backgroundThread.setDaemon(true); 
+								backgroundThread.start();
+								 
+								
+							 
+						}
+							
 				//start.fire();
 				
 			}
@@ -163,16 +214,27 @@ save.setOnAction(new EventHandler<ActionEvent>() {
 			
 			@Override
 			public void handle(ActionEvent event) {
+				
+				if(mCities!=null) {
+					if((mCities.size()<1)) {
+						 S.notice(stage, "Notice", "Number of city  is less than one", "Add at leat one city to save project");   
+					return;
+					}
+					
+				}else {
+						 S.notice(stage, "Notice", "Number of city  is less than one", "Add at leat one city to save project");   
+						 return;		
+					}
+						
 				FileChooser fc = new FileChooser();
 				
 				File file = fc.showSaveDialog(stage);
 				//.setId("start");
-			 
+			        if(file!=null)
 					if (!file.exists()) 
-							saveTSP(file.getAbsolutePath()+".tsp_softcare"); else
-				
-			 S.notice(stage, "Notice", "I/O Error: File Already exist","Choose another file name");	
-			
+				 saveTSP(file.getAbsolutePath()+".tsp_softcare"); 
+					else  S.notice(stage, "Notice", "I/O Error: File Already exist","Choose another file name");	
+			        else    S.notice(stage, "Notice", "Operion canceled","File not chosen");	
 			}
 
 			
@@ -195,10 +257,11 @@ save.setOnAction(new EventHandler<ActionEvent>() {
 				startProgress.setText(startProgress.getText()+algName+ new Date()+"\n");
 					 
 				}else {
-					// less than a problem
-					//notice(Window owner,String title,String warning,String solution)
+					 
 					S.notice(stage, "Notice", "Number of cities are/is less than a problem", "Add more cities or load a new project");
 				}
+				else
+					S.notice(stage, "Notice", "Number of cities are/is less than a problem", "Add more cities or load a new project");
 			}
 			
 		});
@@ -229,8 +292,8 @@ save.setOnAction(new EventHandler<ActionEvent>() {
 	}
 	
  
-
-
+private Thread backgroundThread;
+ProgressPopUp ps;
 protected String geFulltResult(long d) {
 	if(mDirection.size()<2) {
 		return "Action have no defined output yet...";
@@ -245,6 +308,7 @@ protected String geFulltResult(long d) {
 		res+="\t"+mMatrix[prevouse][i]+"\tto\t"; 
 		prevouse =i;
 	}
+	
 	 res+=mCities.get(prevouse)+"\t"; 
 	res+="\n Total distances \t"+mCost;
 	res+="\n Total time \t"+d;
@@ -354,69 +418,79 @@ private int[][] getDataInt(double[][] data) {
 	return res; 
 }
 
+public    String readFile(File file) throws IOException {
+	FileInputStream in = new FileInputStream(file);
+	String res="";
+	BufferedReader buff = new BufferedReader(new FileReader(file)); 
+    String readLine = ""; 
+    if(ps!=null)
+    ps.pro(0, "Reading file");
+    int l=0;
+	while ((readLine = buff.readLine()) != null) { 
+		res+=readLine+"\n";
+		l++;
+		if(ps!=null)
+		 ps.pro(l, "Reading file...  " +l+" lines");
+		            }
 
-protected void readTSP(String id) {
-	// TODO Auto-generated method stub
+	return res;
+}
+public  boolean readTSP(String data) { 
+	System.out.println(data);
+	String   seperator=",";
+	String lines[]= data.split("\n");
+	boolean res=true; 
+	clear();
+	 
+;	if(lines!=null) {
+	int size =lines.length;
+	int previousSize =0;
+	int x=0,y;  
+	 int k=0;;
+	for(String line:lines) {
+		String columns[]= line.trim().split(seperator);
+		 if(ps!=null) {
+			ps.pro(0.5+((k/lines.length)/2), " setting "+k+" of "+lines.length); 
+			if(!ps.back) {
+				return false;
+			}
+		 }
+		y=-1; 
+		if(columns!=null) {  
+			if(previousSize+1==columns.length) {  
+				for(String column:columns) {
+					if(y!=-1) {
+						DoubleStringConverter c= new DoubleStringConverter();
+						mMatrix[x][y]=c.fromString(column.trim().replace(" ",""));
+						 mMatrix[y][x]= mMatrix[x][y]; 
+						 y++;
+					}else {
+						mCities.add(column);
+						y=0;
+					}
+				}
+				previousSize=columns.length;
+			} else{
+System.out.println("hi 1");
+				res=false;
+				break;
+			}
+		}else {
+			System.out.println("hi 2");
+			res=false;
+			break;
+		}
+		x++; 
+	} 
+	 
+	}
+	//System.out.println(M);
+	
+	
+	return res;
 	
 }
 	TextArea input ;
-	protected void addCities(Window owner, final List<String> cities) {
-		// Create a Stage with specified owner and modality
-		Stage stage = new Stage();
-		stage.initOwner(owner);
-		stage.initModality(Modality.APPLICATION_MODAL); 
-		
-		VBox root = new VBox();
-		BorderPane main = new BorderPane();
-		Button add = new Button("add City");
-		Button clear = new Button("clear input");
-		Button save = new Button("save");
-
-		Button finish = new Button("finish");
-		 input = new TextArea();
-		input.setEditable(true);
-		input.setText(getPreview());
-		main.setTop(save);
-		main.setRight(new VBox(add,finish));
-		main.setBottom(clear);
-		main.setCenter(input);
-		root.getChildren().add(main);
-		Scene scene = new Scene(root, 700, 400);
-		stage.setScene(scene);
-		stage.setTitle("Add cities ");
-
-		
-		add.setOnAction(new EventHandler<ActionEvent>() {
-			
-			@Override
-			public void handle(ActionEvent event) {
-				// stage.hide();
-				
-				addCity(stage, cities);
-				for (String c : cities) {
-					System.out.println(c);
-				}
-			}
-		});
-finish.setOnAction(new EventHandler<ActionEvent>() {
-			
-			@Override
-			public void handle(ActionEvent event) {
-				stage.close();
-			}
-		});
-		
-		clear.setOnAction(new EventHandler<ActionEvent>() {
-			
-			@Override
-			public void handle(ActionEvent event) {
-				input.setText("");
-				clear();
-			}
-		});
-		stage.showAndWait();;
-		
-	}
 	
 	protected void clear() {
 		mCities.clear(); 
@@ -492,6 +566,21 @@ finish.setOnAction(new EventHandler<ActionEvent>() {
 		return res;
 		
 	}
+	
+	private String getSave() {
+		String res="";
+		 
+		for(int i =0; i<mCities.size();i++) {
+			res+=  mCities.get(i)+",";
+			for(int j =0; j<i;j++) {
+				res+=  mMatrix[i][j]+",";
+			}
+			res+="\n";
+		}
+		
+		return res;
+		
+	}
 
 	public void addCity(Window owner, List<String> cities) {
 		Stage stage = new Stage();
@@ -525,7 +614,9 @@ finish.setOnAction(new EventHandler<ActionEvent>() {
 		topLayout.getChildren().addAll(l, newCityName,aNum);
 		main.setTop(topLayout);
 		
-		Scene scene = new Scene(main, 400, 500);
+		Scene scene = new Scene(main, 400, 500); 
+ 
+scene.getStylesheets().add(S.PATH_CITY); 
 		stage.setScene(scene);
 		stage.setTitle("Add a city");
 		
@@ -597,10 +688,12 @@ finish.setOnAction(new EventHandler<ActionEvent>() {
 	
 	private void saveTSP(String absolutePath) {
 		File f= new File(absolutePath); 
-				try ( DataOutputStream dout =
-				new DataOutputStream(new FileOutputStream(f)) )
+				try ( FileOutputStream dout = new FileOutputStream(f) )
 				{ 
-				dout.writeChars(startInput.getText());
+
+				     byte[] buffer = getSave().getBytes();
+					
+				dout.write(buffer);
 				} catch(FileNotFoundException e) {
 					S.notice(stage, "Notice", "Cannot Open Output File", e.getLocalizedMessage());
 				System.out.println("Cannot Open Output File");
@@ -614,3 +707,69 @@ finish.setOnAction(new EventHandler<ActionEvent>() {
 	} 
 	
 }
+
+
+/*
+residues
+protected void addCities(Window owner, final List<String> cities) {
+		// Create a Stage with specified owner and modality
+		Stage stage = new Stage();
+		stage.initOwner(owner);
+		stage.initModality(Modality.APPLICATION_MODAL); 
+		
+		VBox root = new VBox();
+		BorderPane main = new BorderPane();
+		Button add = new Button("add City");
+		Button clear = new Button("clear input");
+		Button save = new Button("save");
+
+		Button finish = new Button("finish");
+		 input = new TextArea();
+		input.setEditable(true);
+		input.setText(getPreview());
+		main.setTop(save);
+		main.setRight(new VBox(add,finish));
+		main.setBottom(clear);
+		main.setCenter(input);
+		root.getChildren().add(main);
+		Scene scene = new Scene(root, 700, 400);
+		stage.setScene(scene);
+		stage.setTitle("Add cities ");
+
+		
+		add.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent event) {
+				// stage.hide();
+				
+				addCity(stage, cities);
+				for (String c : cities) {
+					System.out.println(c);
+				}
+			}
+		});
+finish.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent event) {
+				stage.close();
+			}
+		});
+		
+		clear.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent event) {
+				input.setText("");
+				clear();
+			}
+		});
+		stage.showAndWait();;
+		
+	}
+	
+
+
+
+*/
