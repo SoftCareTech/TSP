@@ -12,15 +12,13 @@ public class TSPNearestNeighbour
     private int numberOfNodes;
     private Stack<Integer> stack;
     private double cost=0;
- 
+    List<Integer> 	 direction =new ArrayList<Integer>();
     public TSPNearestNeighbour()
     {
         stack = new Stack<Integer>();
     }
- List<Integer> getTour(){
-	 List<Integer> 	 r=new ArrayList<Integer>();
-	 r.addAll(stack);
-	return r;
+ public List<Integer> getTour(){  
+	return direction;
  }
  public double getCost() {
 	 return this.cost;
@@ -35,7 +33,7 @@ public class TSPNearestNeighbour
         int min = Integer.MAX_VALUE;
         boolean minFlag = false;
         System.out.print(1 + "\t");
- 
+        direction.add(1);
         while (!stack.isEmpty())
         {
             element = stack.peek();
@@ -59,11 +57,18 @@ public class TSPNearestNeighbour
                 visited[dst] = 1;
                 stack.push(dst);
                 System.out.print(dst + "\t");
+                direction.add(dst);
                 //System.out.println(adjacencyMatrix[dst]);
                 minFlag = false;
                 continue;
             }
             stack.pop();
+        }
+        System.out.println(" Test direction "+visited.toString());
+        direction.add(0);
+         direction.add(0, 0);// add the starting as  0 back to zero
+        for(Integer in:direction) { 
+            System.out.println(" Test direction "+in.intValue());
         }
     }
  

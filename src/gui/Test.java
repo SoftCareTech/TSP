@@ -6,6 +6,7 @@ import algorithm.Salesmensch;
 import algorithm.SelectionType;
 import algorithm.TSPNearestNeighbour;
 import algorithm.TspDynamicProgrammingIterative;
+import util.PointXY;
 
 public class Test {
     public static void printTravelPrices(double[][] travelPrices, int numberOfCities){
@@ -32,8 +33,43 @@ public class Test {
             System.out.println("");
         }
     }
+    private static double distance(PointXY p1,PointXY  p2) {
+    	  return euclidean(p1.x - p2.x, p1.y - p2.y);
+    	}
+    	private static double euclidean(double dx,double dy) {
+    	  return Math.sqrt(dx * dx + dy * dy);
+    	}
+   public static PointXY getPoint(PointXY p0, PointXY p1, double p0r, double p1r) {
+    		 double x=0,y=0;
+    		double d=  distance(p0,p1);
+    		if(d<(p0r+p1r)&&d>(p0r-p1r)) {
+    			double a= ((p0r*p0r)-(p1r*p1r)+(d*d))/(2*d);
+    			PointXY p2= new PointXY(
+    					p0.x+a*(p1.x-p0.x),
+    					p0.y+a*(p1.y-p0.y));
+    			 
+    			double h= Math.sqrt( (p0r*p0r) -(a*a)); 
+    			return new PointXY(
+    					(p2.x +h*(p1.y-p0.y))/d,
+    					(p2.y+h* (p1.x-p0.x))/d
+    					);
+    			
+    		}
+    		 
+    		 
+    		return new PointXY(x,y);
+    	}	 
+    
     public static void main(String[] args) {
     	
+    	
+    	
+    	PointXY p= getPoint(new PointXY(0,0), new PointXY(0,4),5,3);
+    	System.out.println("x= "+p.x+"  y = "+p.y);
+    	
+    	PointXY p1= getPoint(new PointXY(0,0), new PointXY(0,4),3,5);
+    	System.out.println("x= "+p1.x+"  y = "+p1.y); 
+    	System.exit(0);
     	 String dat= "F,\r\n" + 
     	 		"X,5.0,\r\n" + 
     	 		"D,6.0,9.0,\r\n" + 

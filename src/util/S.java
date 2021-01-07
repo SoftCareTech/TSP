@@ -3,6 +3,7 @@ package util;
 import java.awt.AWTException;
 import java.awt.Robot;
 import java.text.DecimalFormat;
+import java.util.Formatter;
 
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -115,6 +116,17 @@ stage.initOwner(owner);
 			 
 			
 		}
+
+	public static String doubleToString(double d) {
+
+
+        Formatter f = new Formatter();
+        String s =String.valueOf(f.format("%.2f", d));
+        f.close();
+        return s;
+	}
+	 
+
 			
 
 }
