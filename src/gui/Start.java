@@ -340,11 +340,38 @@ public class Start extends BorderPane {
 				if (mCities != null)
 					if (mCities.size() > 2) {
 						
-						startProgress.setText(startProgress.getText() + "started 3 Algorthm at" + new Date() + "\n");
-						long d = startAgl(getData(), alg); 
-						startResult.setText(new Date() + "\n" + geFulltResult(d));
-						startProgress.setText(startProgress.getText() + algName + new Date() + "\n");
-					 
+						startProgress.setText(startProgress.getText() + "Started 3 Algorthm at " + new Date() + "\n");
+				 	//start 
+						
+					 //
+					 	Runnable task = () -> { 
+								long d = startAgl(getData(), alg);  
+								
+								Platform.runLater(() -> { 
+									startResult.setText(new Date() +
+											"\n" + geFulltResult(d));
+									startProgress.setText(startProgress.getText() +
+											algName + new Date() + "\n");
+								});
+								 
+						if(ps!=null) {
+							ps.prepareStop();
+							ps.stop();
+						}
+				 		
+						 };
+						// Run the task in a background thread
+						backgroundThread = new Thread(task);
+						
+						ps = new ProgressPopUp(backgroundThread);
+						ps.notice(stage, "Algorithm running");
+						ps.pro(0, "Algorithm running");
+						// Terminate the running thread if the application exits
+						backgroundThread.setDaemon(true);
+						backgroundThread.start();
+						
+						
+						
 					} else {
 						
 						S.notice(stage, "Notice", "Number of cities are/is less than a problem",
@@ -501,7 +528,16 @@ newCityXY.setOnAction(new EventHandler<ActionEvent>() {
 			mCost=cost;
 		}
 		res += "\n Total distances \t" + mCost;
-		res += "\n Total time \t" + d;
+		if(d>0) {
+		double time = d/1000;
+		if(time>1)
+		res += "\n Total time \t" + time+" seconds";
+		else
+			res += "\n Total time \t" + time+" second";
+		}else {
+			res += "\n Total time \t" + d+" second";
+		}
+		//res += "\n Total time \t" + d;
 		res += "\n\n  Path: ";
 		prevouse = mDirection.get(0);
 		if (mDirection != null)

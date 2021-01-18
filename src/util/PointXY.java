@@ -19,4 +19,5 @@ public class PointXY{
 	public void setY(double y) {
 		this.y = y;
 	}
+	 
 }
