@@ -78,7 +78,7 @@ tsp.setOnAction(new EventHandler<ActionEvent>() {
 	@Override
 	public void handle(ActionEvent arg0) {
 
-		saveTSP(tspV,".tsp"); } });
+		saveTSP(tspV,".csv"); } });
 			Scene st = new Scene(main, 300, 300);
 			// st.getStylesheets().add(S.PATH_MAIN);
 			stage.setScene(st);

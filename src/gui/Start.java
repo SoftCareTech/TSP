@@ -194,7 +194,7 @@ public class Start extends BorderPane {
 									;
 									
 									try {
-										Thread.sleep(2000);
+										Thread.sleep(200);
 										
 									} catch (InterruptedException e) {
 										// TODO Auto-generated catch block
@@ -235,8 +235,9 @@ public class Start extends BorderPane {
 			public void handle(ActionEvent event) {
 				FileChooser fc = new FileChooser();
 				
-				File file =  fc.showOpenDialog(stage);
-				fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("*.tsp_softcare", "*.tsp"));
+				File file = 
+						//new File("C:\\Users\\GBENGE AONDOAKULA\\Downloads\\csv\\csv\\ulysses22.csv");
+                fc.showOpenDialog(stage); 
 				if (file == null) {
 					S.notice(stage, "Error", "File not seleted", " select a file that exist");
 				}else
@@ -278,7 +279,7 @@ public class Start extends BorderPane {
 									;
 									
 									try {
-										Thread.sleep(2000);
+										Thread.sleep(200);
 										
 									} catch (InterruptedException e) {
 										// TODO Auto-generated catch block
@@ -346,6 +347,8 @@ public class Start extends BorderPane {
 					 //
 					 	Runnable task = () -> { 
 								long d = startAgl(getData(), alg);  
+								System.out.print(" Time used ");
+								System.out.println(d);
 								
 								Platform.runLater(() -> { 
 									startResult.setText(new Date() +
@@ -428,21 +431,28 @@ newCityXY.setOnAction(new EventHandler<ActionEvent>() {
 		});
 		
 	}
-	
+	String header="";
 	protected boolean readTSP_XY(String tsp) {
 		mCities.clear();
+		header="";
 		if (tsp != null) {
 			String lines[] = tsp.split("\n");
-			String name = "TSP" + pointXY.size();
-			String comment = "Faith TSP solution ";
-			String type = "TSP";
-			String edgeType = "EUC_2D";
+			
 			List<PointXY> p = new ArrayList<>();
-			if (lines.length > 8) {
-				for (int i = 6; i < lines.length - 1; i++) {
-					// System.out.println(" Result "+lines[i]);
+			  int pp=1;
+			for (String li:lines) {
+				header+=li+"\n";
+				if(li.trim().contains("NODE_COORD_SECTION")) {
+					 break;
+				}
+				
+				pp++;
+			} 
+			 
+				for (int i = pp; i < lines.length - 1; i++) {
+					 System.out.println(" Result "+lines[i]);
 					String[] name_X_Y = lines[i].trim().split("\\s+");
-					// System.out.println(" Debug size "+name_X_Y.length);
+					  System.out.println(" Debug size "+name_X_Y.length);
 					if (name_X_Y.length == 3) {
 						mCities.add(name_X_Y[0]);
 						try {
@@ -454,7 +464,7 @@ newCityXY.setOnAction(new EventHandler<ActionEvent>() {
 						}
 					} else {
 						for (String s : name_X_Y) {
-							System.out.println(" Debug data " + s);
+							System.out.println(" ERR Debug data " + s);
 						}
 						
 						return false;
@@ -469,7 +479,7 @@ newCityXY.setOnAction(new EventHandler<ActionEvent>() {
 				System.out.println(" read ts  " + (lines.length - 7));
 				pointXY.addAll(p);
 				return true;
-			}
+			 
 		}
 		return false;
 	}
@@ -477,17 +487,8 @@ newCityXY.setOnAction(new EventHandler<ActionEvent>() {
 	protected String getPreviewXY() {
 		String res = " ";
 		if (pointXY != null) {
-			String name = "TSP" + pointXY.size();
-			String comment = "Faith TSP solution ";
-			String type = "TSP";
-			String edgeType = "EUC_2D";
-			res = name + "\n";
-			res += "TYPE: " + type + "\n";
-			res += "COMMENT: " + comment + "\n";
-			res += "DIMENSION: " + pointXY.size() + "\n";
-			res += "EDGE_WEIGHT_TYPE: " + edgeType + "\n";
-			res += "NODE_COORD_SECTION\n";
 			
+			res=header;
 			for (int i = 0; i < mCities.size(); i++) {
 				res = res + mCities.get(i).replace(" ", "_") +
 						"    " + pointXY.get(i).getX() + " "
@@ -528,14 +529,15 @@ newCityXY.setOnAction(new EventHandler<ActionEvent>() {
 			mCost=cost;
 		}
 		res += "\n Total distances \t" + mCost;
-		if(d>0) {
-		double time = d/1000;
-		if(time>1)
-		res += "\n Total time \t" + time+" seconds";
+		if(d>0L) {
+		double time = (double)d/(double)1000;
+		if(time!=1)
+		res += "\n Total time in seconds\t" + time+" seconds";
 		else
-			res += "\n Total time \t" + time+" second";
+			res += "\n Total time  in seconds\t" + time+" second";
+		
 		}else {
-			res += "\n Total time \t" + d+" second";
+			res += "\n Total time in seconds\t" + " is zero seconds";
 		}
 		//res += "\n Total time \t" + d;
 		res += "\n\n  Path: ";
@@ -545,7 +547,8 @@ newCityXY.setOnAction(new EventHandler<ActionEvent>() {
 				int i = mDirection.get(x);
 				res += mCities.get(i) + "\t";
 			}
-		res += "\n  Path: " + mDirection.toString();
+		//res += "\n Total time in millsec\t" + d+"  ";
+		//res += "\n  Path: " + mDirection.toString();
 		//Plot(List<PointXY>pointXY, List<String> cities,	List<Integer> path, 
 		//<Double[]distance )
 		Plot p= new Plot(pointXY,mCities,mDirection,dist);
@@ -671,11 +674,25 @@ newCityXY.setOnAction(new EventHandler<ActionEvent>() {
 	public boolean readTSP(String data) {
 		 System.out.println(data);
 		
+		 String resH ="";
+		
 		mCities.clear();
 		String seperator = "\\s+";
 		String lines[] = data.split("\n");
 		boolean res = true;
 		clear(); 
+		 String name = "TSP" + (lines.length-1);
+			String comment = "Faith TSP solution ";
+			String type = "TSP";
+			String edgeType = "EUC_2D";
+			resH = name + "\n";
+			resH += "TYPE: " + type + "\n";
+			resH += "COMMENT: " + comment + "\n";
+			resH += "DIMENSION: " +  (lines.length-1) + "\n";
+			resH += "EDGE_WEIGHT_TYPE: " + edgeType + "\n";
+			resH += "NODE_COORD_SECTION\n"; 
+			header=resH;
+			
 		
 		if (lines != null) { 
 			int x = -1, y=-1;
