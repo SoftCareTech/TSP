@@ -24,25 +24,35 @@ import util.PointXY;
 	public class Plot {
 		private Stage stage = new Stage(); 
 		 private Canvas canvas;
-		 
-		public Plot(List<PointXY>pointXY, List<String> cities,	List<Integer> path,
+		private List<PointXY>pointXY; List<String> 
+		cities;	List<Integer> path;
+		 double [] distance ;
+		 private double zoom= 1;
+		double invertNegavative=0;
+		public Plot(List<PointXY>pointXY, List<String> 
+		cities,	List<Integer> path,
 				 double [] distance ) { 
-			 canvas  = new Canvas(400, 500);
-			GraphicsContext gc = canvas.getGraphicsContext2D(); 
-			// Set drawing parameters  
-			gc.setStroke(Color.RED);
-			gc.setFill(Color.BLUE);
-			gc.setLineWidth(1); 
-			//gc.fillPolygon(xPoints, yPoints, nPoints);
-			gc.beginPath();
-			gc.moveTo(pointXY.get(0).x+100, pointXY.get(0).y+100); 
-			for(Integer i:path) {
-				gc.lineTo(pointXY.get(i).x+100, pointXY.get(i).y+100); 
-				gc.fillOval(pointXY.get(i).x+100, pointXY.get(i).y+100, 5, 5);
-				gc.fillText(cities.get(i), pointXY.get(i).x+100, pointXY.get(i).y+100, distance[i]);
-				//System.out.println("YY "+pointXY.get(i).x+"  YY " +pointXY.get(i).y);
-			} 
-			gc.stroke();
+			this.pointXY=pointXY;
+			this.cities=cities;
+			this.path=path;
+			this.distance=distance;
+			
+			for(PointXY p:pointXY) {
+				 if(p.x<invertNegavative) {
+					 invertNegavative=p.x;
+				 }
+
+				 if(p.y<invertNegavative) {
+					 invertNegavative=p.y;
+				 }
+				
+				 
+			}
+			if(invertNegavative<0)
+			invertNegavative=invertNegavative*-1;
+			//invertNegavative=0;
+			canvas  = new Canvas(w, h); 
+			zoom();
 			 
 		}
 		
@@ -56,23 +66,74 @@ import util.PointXY;
 
 
 
-
-
-
+int w=4000;
+int h=5000;
+ public void zoom() {
+	 System.out.println("INVERT NEGATIVE  "+ invertNegavative);
+	 GraphicsContext gc = canvas.getGraphicsContext2D(); 
+	 gc.clearRect(0, 0, w,h); // First clear the canvas
+		// Set drawing parameters  
+		gc.setStroke(Color.RED);
+		gc.setFill(Color.BLUE);
+		gc.setLineWidth(1); 
+		//gc.fillPolygon(xPoints, yPoints, nPoints);
+		gc.beginPath();
+		double x=(((pointXY.get(0).x+ invertNegavative+margin)*zoom)-margin*zoom)+margin;
+		double y=(((pointXY.get(0).y+ invertNegavative+margin)*zoom)-margin*zoom)+margin;
+		gc.moveTo(x, y); 
+		for(Integer i:path) {
+			x=(((pointXY.get(i).x+ invertNegavative+margin)*zoom)-margin*zoom)+margin;
+			  y=((pointXY.get(i).y+ invertNegavative+margin)*zoom-margin*zoom)+margin;
+			gc.lineTo(x, y); 
+			gc.fillOval(x, y, circlRadius, circlRadius);
+			gc.fillText(cities.get(i), x, y, distance[i]);
+			//System.out.println("YY "+pointXY.get(i).x+"  YY " +pointXY.get(i).y);
+		} 
+		gc.stroke();
+		 	 
+		 }
+ public void zoomOut() { 
+	  
+	 zoom=zoom+4;
+	 zoom();
+		 }
+ public void zoomIn() { 
+	 if(zoom>2)
+	 zoom=zoom-2;
+	 zoom();
+		 }
+ int margin =10;
+ int circlRadius=10;
+ Window owner; String title; String res;
 
 		public void plot(Window owner, String title, String res) { 
+			this.owner =owner;
+			this.title =title;
+			this.res =res;
+			
 			VBox vertical = new VBox();
 			vertical.setAlignment(Pos.CENTER); 
 			BorderPane main = new BorderPane(vertical); 
 			;
 			
 			Button stop = new Button("Close"); 
-			HBox sto = new HBox(stop);
+			Button in = new Button("Zoom in"); 
+			Button out = new Button("Zoom out"); 
+			HBox sto = new HBox(out, in,stop);
 			sto.setAlignment(Pos.BOTTOM_RIGHT);
+			HBox top = new HBox(in,out);
+			top.setAlignment(Pos.BOTTOM_RIGHT);
+			main.setTop(top);
 			main.setBottom(new VBox(new TextArea(res),sto));
 			main.setCenter( new ScrollPane(canvas)); 
-			stop.setPrefSize(100, 14);
 			
+			stop.setPrefSize(100, 14);
+out.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent arg0) { zoomOut(); } });	
+in.setOnAction(new EventHandler<ActionEvent>() {
+	@Override
+	public void handle(ActionEvent arg0) { zoomIn(); } });	
 			stop.setOnAction(new EventHandler<ActionEvent>() {
 				
 				@Override

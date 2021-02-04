@@ -54,9 +54,9 @@ public class Start extends BorderPane {
 	int defaultSize = 1024;
 	private double mMatrix[][] = new double[defaultSize][defaultSize];
 	private double mCost;
-	private int alg = 1;
+	private int alg = 2;// genetic first
 	private Stage stage;
-	
+	private int waitTime=500;
 	private String algName;
 	private TextArea startInput;
 	
@@ -108,6 +108,7 @@ public class Start extends BorderPane {
 		rbDyn.setToggleGroup(tg);
 		rbKnn.setToggleGroup(tg);
 		rbGen.setToggleGroup(tg);
+		
 		rbGen.setSelected(true);
 		// Handle action events for the radio buttons.
 		rbDyn.setOnAction(new EventHandler<ActionEvent>() {
@@ -194,7 +195,7 @@ public class Start extends BorderPane {
 									;
 									
 									try {
-										Thread.sleep(200);
+										Thread.sleep(waitTime);
 										
 									} catch (InterruptedException e) {
 										// TODO Auto-generated catch block
@@ -279,7 +280,7 @@ public class Start extends BorderPane {
 									;
 									
 									try {
-										Thread.sleep(200);
+										Thread.sleep(waitTime);
 										
 									} catch (InterruptedException e) {
 										// TODO Auto-generated catch block
@@ -352,7 +353,7 @@ public class Start extends BorderPane {
 								
 								Platform.runLater(() -> { 
 									startResult.setText(new Date() +
-											"\n" + geFulltResult(d));
+											"\n" + geFulltResult(d, alg));
 									startProgress.setText(startProgress.getText() +
 											algName + new Date() + "\n");
 								});
@@ -504,7 +505,7 @@ newCityXY.setOnAction(new EventHandler<ActionEvent>() {
 	private Thread backgroundThread;
 	ProgressPopUp ps;
 	
-	protected String geFulltResult(long d) {
+	protected String geFulltResult(long d, int alg) {
 		double cost=0;
 		if (mDirection.size() < 2) {
 			return "Action have no defined output yet...";
@@ -552,7 +553,27 @@ newCityXY.setOnAction(new EventHandler<ActionEvent>() {
 		//Plot(List<PointXY>pointXY, List<String> cities,	List<Integer> path, 
 		//<Double[]distance )
 		Plot p= new Plot(pointXY,mCities,mDirection,dist);
-		p.plot(stage, "Result", res);
+		
+		
+		switch (alg) {
+		case 1: {
+			
+			p.plot(stage, "Result  Dnynamic  Algorithm ", res);
+			
+			break;
+		}
+		
+		case 2: { 
+			p.plot(stage, "Result Genetic Algorithm  ", res);
+			 
+			break;
+		}
+		
+		case 3: { 
+			p.plot(stage, "Result TSP Nearest Neighbour ", res);  
+			break;
+		}}
+		
 		System.out.println("COST + "+cost);
 		return res;
 		

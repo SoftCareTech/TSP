@@ -22,7 +22,7 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
 public class ProgressPopUp {
-	Stage stage = new Stage();
+	Stage stage ;
 	ProgressBar progress;
 	public boolean back = false;
 	
@@ -46,6 +46,7 @@ public class ProgressPopUp {
 	private Thread t;
 	
 	public ProgressPopUp(Thread tt) {
+		this.stage = new Stage();
 		this.t = tt;
 		
 	}
@@ -62,19 +63,23 @@ public class ProgressPopUp {
 		});
 	}
 	
-	public void stop() {
-		if (t != null) {
-			t.stop();
-			if (t != null) {
-				System.out.println(t.getName() + "  ok");
-			} else {
-				System.out.println("fffffffff");
-			}
-		}
+	public void stop() { 
 		Platform.runLater(() -> {
-			if (stage != null)
+			if (stage != null) { 
 				stage.close();
-		});
+				}
+			 else {
+					System.err.println("stage == null");
+				}});
+			if (t != null) {
+				t.stop();
+				if (t != null) {
+					System.out.println(t.getName() + "  ok");
+				} else {
+					System.err.println("Thread not found, pls restart");
+				}
+			}
+			
 		back = false;
 		
 	}
